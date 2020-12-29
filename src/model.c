@@ -23,10 +23,10 @@ void drawModel(int model, ScePspFVector3 *pos, ScePspFVector3 *rot, ScePspFVecto
     sceGuTexImage(0, loaded_models[model].texture_size, loaded_models[model].texture_size, loaded_models[model].texture_size, loaded_models[model].texture_vram);
 
     sceGuColor(0xffffff);
-    sceGumDrawArray(GU_TRIANGLES,TNP_VERTEX_FORMAT|GU_TRANSFORM_3D,loaded_models[model].num_vertices,NULL,loaded_models[model].vertices);
+    sceGumDrawArray(GU_TRIANGLES, TNP_VERTEX_FORMAT | GU_TRANSFORM_3D, loaded_models[model].num_vertices, NULL, loaded_models[model].vertices);
 }
 
-void *loadTexture(const char *texture_filename, enum faceType face_type, int *texture_size) {
+static void *loadTexture(const char *texture_filename, enum faceType face_type, int *texture_size) {
     upng_t *upng;
 
     upng = upng_new_from_file(texture_filename);
@@ -48,27 +48,22 @@ void *loadTexture(const char *texture_filename, enum faceType face_type, int *te
 }
 
 void destroyModel(int model) {
-    free(loaded_models[model].vertices);
+    vfree(loaded_models[model].vertices);
     vfree(loaded_models[model].texture_vram);
     memset(&loaded_models[model], 0, sizeof(loaded_models[model]));
 }
 
 void loadModel(const char *obj_filename, const char *texture_filename, enum faceType face_type) {
     struct {
-        struct face *faces;
+        struct face faces[MAX_OBJ_SIZE];
         int num_faces;
-        ScePspFVector3 *vertices;
+        ScePspFVector3 vertices[MAX_OBJ_SIZE];
         int num_vertices;
-        ScePspFVector3 *normals;
+        ScePspFVector3 normals[MAX_OBJ_SIZE];
         int num_normals;
-        ScePspFVector2 *texture_coords;
+        ScePspFVector2 texture_coords[MAX_OBJ_SIZE];
         int num_texture_coords;
     } file = {0};
-
-    file.vertices = malloc(MAX_OBJ_SIZE * sizeof(ScePspFVector3));
-    file.faces = malloc(MAX_OBJ_SIZE * sizeof(struct face));
-    file.normals = malloc(MAX_OBJ_SIZE * sizeof(ScePspFVector3));
-    file.texture_coords = malloc(MAX_OBJ_SIZE * sizeof(ScePspFVector2));
 
     FILE *f = fopen(obj_filename, "r");
     char buffer[40] = {0};
@@ -125,7 +120,7 @@ void loadModel(const char *obj_filename, const char *texture_filename, enum face
         model->texture_vram = loadTexture(texture_filename, face_type, &model->texture_size);
     }
     model->face_type = face_type;
-    model->vertices = malloc(3 * file.num_faces * sizeof(struct NPVertex));
+    model->vertices = valloc(3 * file.num_faces * sizeof(struct NPVertex));
     model->num_vertices = 3 * file.num_faces;
 
     int k = 0;
@@ -145,9 +140,4 @@ void loadModel(const char *obj_filename, const char *texture_filename, enum face
         k += 3;
     }
     loaded_models_n++;
-
-    free(file.vertices);
-    free(file.faces);
-    free(file.normals);
-    free(file.texture_coords);
 }

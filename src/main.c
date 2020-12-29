@@ -24,7 +24,7 @@
 #include <vector.h>
 #include <model.h>
 
-PSP_MODULE_INFO("Lights Sample", 0, 1, 1);
+PSP_MODULE_INFO("psp3d", 0, 1, 1);
 PSP_MAIN_THREAD_ATTR(THREAD_ATTR_USER | THREAD_ATTR_VFPU);
 
 static unsigned int __attribute__((aligned(16))) list[262144];
@@ -111,13 +111,7 @@ int main(int argc, char* argv[]) {
         // draw obj
         {
             ScePspFVector3 rot = {0, val * 0.98f * (GU_PI/180.0f), 0};
-            ScePspFVector3 pos = {1.0f, -1.0f, 0};
-            ScePspFVector3 scale = {1.0f, 1.0f, 1.0f};
-            drawModel(0, &pos, &rot, &scale);
-        }
-        {
-            ScePspFVector3 rot = {0, val * 0.9f * (GU_PI/180.0f), 0};
-            ScePspFVector3 pos = {-1.0f, -1.0f, 0};
+            ScePspFVector3 pos = {0.0f, -1.0f, 0};
             ScePspFVector3 scale = {1.0f, 1.0f, 1.0f};
             drawModel(0, &pos, &rot, &scale);
         }
