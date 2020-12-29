@@ -64,7 +64,7 @@ inline ScePspFVector3 vectorSubtract(ScePspFVector3 a, ScePspFVector3 b) {
 }
 
 // https://gamedev.stackexchange.com/questions/28395/rotating-vector3-by-a-quaternion
-ScePspFVector3 vectorRotate(ScePspFVector3 v, ScePspFVector4 q) {
+ScePspFVector3 vectorRotate(ScePspFVector3 v, ScePspFQuaternion q) {
     ScePspFVector3 u = {.x = q.x, .y = q.y, .z = q.z};
     float s = q.w;
 
@@ -73,8 +73,8 @@ ScePspFVector3 vectorRotate(ScePspFVector3 v, ScePspFVector4 q) {
                 vectorScale(2.0f * s, vectorCross(u, v))));
 }
 
-ScePspFVector4 getRotationQuat(ScePspFVector3 from, ScePspFVector3 to) {
-    ScePspFVector4 result;
+ScePspFQuaternion getRotationQuat(ScePspFVector3 from, ScePspFVector3 to) {
+    ScePspFQuaternion result;
     ScePspFVector3 H;
 
     H.x = from.x + to.x;
@@ -90,8 +90,8 @@ ScePspFVector4 getRotationQuat(ScePspFVector3 from, ScePspFVector3 to) {
     return result;
 }
 
-ScePspFVector4 quatMult(ScePspFVector4 a, ScePspFVector4 b) {
-    ScePspFVector4 ret;
+ScePspFQuaternion quatMult(ScePspFQuaternion a, ScePspFQuaternion b) {
+    ScePspFQuaternion ret;
 
     ret.w = a.w*b.w - a.x*b.x - a.y*b.y - a.z*b.z;
     ret.x = a.w*b.x + a.x*b.w - a.y*b.z + a.z*b.y;

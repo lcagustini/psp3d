@@ -6,65 +6,57 @@
 #include <pspgu.h>
 #include <pspgum.h>
 #include <model.h>
+#include <vram.h>
+#include <upng.h>
 
 void drawModel(int model, ScePspFVector3 *pos, ScePspFVector3 *rot, ScePspFVector3 *scale) {
-    //glBindTexture(GL_TEXTURE_2D, loaded_models[model].texture_id);
-    //glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-
     sceGumMatrixMode(GU_MODEL);
     sceGumLoadIdentity();
     sceGumScale(scale);
     sceGumRotateXYZ(rot);
     sceGumTranslate(pos);
 
-    sceGuColor(0xffffff);
-    sceGumDrawArray(GU_TRIANGLES,NP_VERTEX_FORMAT|GU_TRANSFORM_3D,loaded_models[model].num_vertices,NULL,loaded_models[model].vertices);
+    sceGuTexMode(GU_PSM_8888, 0, 0, GU_FALSE);
+    sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
+    sceGuTexLevelMode(GU_TEXTURE_AUTO, 0);
+    sceGuTexFilter(GU_LINEAR, GU_LINEAR);
+    sceGuTexImage(0, loaded_models[model].texture_size, loaded_models[model].texture_size, loaded_models[model].texture_size, loaded_models[model].texture_vram);
 
-    //glBindTexture(GL_TEXTURE_2D, 0);
+    sceGuColor(0xffffff);
+    sceGumDrawArray(GU_TRIANGLES,TNP_VERTEX_FORMAT|GU_TRANSFORM_3D,loaded_models[model].num_vertices,NULL,loaded_models[model].vertices);
 }
 
-unsigned int loadTexture(const char *texture_filename, enum faceType face_type, int texture_size) {
-    return 0;
+void *loadTexture(const char *texture_filename, enum faceType face_type, int texture_size) {
+    upng_t *upng;
 
-    //GLuint texture_id;
-    //FILE *f = fopen(texture_filename, "rb");
+    upng = upng_new_from_file(texture_filename);
+    if (upng != NULL) {
+        upng_decode(upng);
+        if (upng_get_error(upng) == UPNG_EOK) {
+            void *texture = valloc(getVRAMSize(texture_size, texture_size, GU_PSM_8888));
+            void *png = (void *) upng_get_buffer(upng);
 
-    //struct stat st;
-    //stat(texture_filename, &st);
+            unsigned char *texture_byte = (unsigned char *) texture;
+            unsigned char *png_byte = (unsigned char *) png;
+            for (int i = 0; i < upng_get_size(upng); i++) {
+                texture_byte[i] = png_byte[i];
+            }
 
-    //char *sur = malloc(st.st_size);
-    //fread(sur, 1, st.st_size, f);
-    //fclose(f);
+            //sceGuCopyImage(GU_PSM_8888, 0, 0, texture_size, texture_size, texture_size, png, 0, 0, texture_size, texture);
+            sceGuTexSync();
 
-    //assert(sur);
+            return texture;
+        }
 
-    //glGenTextures(1, &texture_id);
-    //glBindTexture(GL_TEXTURE_2D, texture_id);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    //glCompressedTexImage2D(GL_TEXTURE_2D,  /* This must be GL_TEXTURE_2D */
-            //0,             /* 0 = Texture does not contain Mip-Maps */
-            //face_type == VERTEX_ALL ? GL_UNSIGNED_SHORT_5_6_5_VQ_TWID : GL_UNSIGNED_SHORT_1_5_5_5_VQ_TWID,        /* GL Compressed Color Format */
-            //texture_size,           /* Texture Width */
-            //texture_size,           /* Texture Height */
-            //0,             /* This bit must be set to 0 */
-            //st.st_size, /* Compressed Texture Size*/
-            //sur);       /* Address of texture data in RAM: OpenGL will load the texture into VRAM for you.
-                           //Because of this, make sure to call glDeleteTextures() as needed, as that will
-                           //free the VRAM allocated for the texture. */
-    //glBindTexture(GL_TEXTURE_2D, 0);
+        upng_free(upng);
+    }
 
-    //free(sur);
-
-    //return texture_id;
+    return NULL;
 }
 
 void destroyModel(int model) {
     free(loaded_models[model].vertices);
-
-    //if (loaded_models[model].face_type == VERTEX_ALL || loaded_models[model].face_type == VERTEX_ALL_ALPHA) {
-        //glDeleteTextures(1, &loaded_models[model].texture_id);
-    //}
+    vfree(loaded_models[model].texture_vram);
 }
 
 void loadModel(const char *obj_filename, const char *texture_filename, enum faceType face_type, int texture_size) {
@@ -137,9 +129,10 @@ void loadModel(const char *obj_filename, const char *texture_filename, enum face
     struct model *model = &loaded_models[loaded_models_n];
 
     if (face_type == VERTEX_ALL) {
-        model->texture_id = loadTexture(texture_filename, face_type, texture_size);
+        model->texture_vram = loadTexture(texture_filename, face_type, texture_size);
     }
     model->face_type = face_type;
+    model->texture_size = texture_size;
     model->vertices = malloc(3 * file.num_faces * sizeof(struct NPVertex));
     model->num_vertices = 3 * file.num_faces;
 
@@ -152,6 +145,10 @@ void loadModel(const char *obj_filename, const char *texture_filename, enum face
         model->vertices[k].position = file.vertices[file.faces[i].vertices[0]];
         model->vertices[k+1].position = file.vertices[file.faces[i].vertices[1]];
         model->vertices[k+2].position = file.vertices[file.faces[i].vertices[2]];
+
+        model->vertices[k].texture = file.texture_coords[file.faces[i].texture_coords[0]];
+        model->vertices[k+1].texture = file.texture_coords[file.faces[i].texture_coords[1]];
+        model->vertices[k+2].texture = file.texture_coords[file.faces[i].texture_coords[2]];
 
         k += 3;
     }

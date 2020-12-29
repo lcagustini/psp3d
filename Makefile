@@ -1,5 +1,5 @@
 TARGET = main
-OBJS = bin/main.o bin/callbacks.o bin/vram.o bin/model.o
+OBJS = bin/main.o bin/callbacks.o bin/vram.o bin/model.o bin/upng.o
 
 INCDIR = ./include
 CFLAGS = -G0 -Wall -Ofast

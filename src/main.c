@@ -25,7 +25,7 @@
 #include <model.h>
 
 PSP_MODULE_INFO("Lights Sample", 0, 1, 1);
-PSP_MAIN_THREAD_ATTR(THREAD_ATTR_USER);
+PSP_MAIN_THREAD_ATTR(THREAD_ATTR_USER | THREAD_ATTR_VFPU);
 
 static unsigned int __attribute__((aligned(16))) list[262144];
 
@@ -34,13 +34,6 @@ static unsigned int __attribute__((aligned(16))) list[262144];
 #define SCR_HEIGHT (272)
 
 #define LIGHT_DISTANCE 3.0f
-
-unsigned int colors[4] = {
-    0xffff0000,
-    0xff00ff00,
-    0xff0000ff,
-    0xffff00ff
-};
 
 int main(int argc, char* argv[]) {
     setupCallbacks();
@@ -70,19 +63,18 @@ int main(int argc, char* argv[]) {
     sceGuShadeModel(GU_SMOOTH);
     sceGuEnable(GU_CULL_FACE);
     sceGuEnable(GU_CLIP_PLANES);
+    sceGuEnable(GU_TEXTURE_2D);
     sceGuEnable(GU_LIGHTING);
     sceGuEnable(GU_LIGHT0);
-    sceGuEnable(GU_LIGHT1);
-    sceGuEnable(GU_LIGHT2);
-    sceGuEnable(GU_LIGHT3);
     sceGuFinish();
-    sceGuSync(0,0);
+    sceGuSync(0, 0);
+
     sceDisplayWaitVblankStart();
     sceGuDisplay(GU_TRUE);
 
-    loadModel("assets/test.obj", "", VERTEX_ALL, 0);
+    loadModel("assets/test.obj", "assets/test.png", VERTEX_ALL, 128);
 
-    pspDebugScreenInit();
+    //pspDebugScreenInit();
 
     int val = 0;
     while(running()) {
@@ -95,12 +87,12 @@ int main(int argc, char* argv[]) {
         sceGuClear(GU_COLOR_BUFFER_BIT | GU_DEPTH_BUFFER_BIT);
 
         // setup lights
-        for (int i = 0; i < 4; i++) {
-            ScePspFVector3 pos = { cosf(i*(GU_PI/2) + val * (GU_PI/180)) * LIGHT_DISTANCE, 0, sinf(i*(GU_PI/2) + val * (GU_PI/180)) * LIGHT_DISTANCE };
-            sceGuLight(i, GU_POINTLIGHT, GU_DIFFUSE_AND_SPECULAR, &pos);
-            sceGuLightColor(i, GU_DIFFUSE, colors[i]);
-            sceGuLightColor(i, GU_SPECULAR, 0xffffffff);
-            sceGuLightAtt(i, 0.0f, 1.0f, 0.0f);
+        {
+            ScePspFVector3 pos = { cosf(val * (GU_PI/180)) * LIGHT_DISTANCE, 0, sinf(val * (GU_PI/180)) * LIGHT_DISTANCE };
+            sceGuLight(0, GU_POINTLIGHT, GU_DIFFUSE_AND_SPECULAR, &pos);
+            sceGuLightColor(0, GU_DIFFUSE, 0xffffffff);
+            sceGuLightColor(0, GU_SPECULAR, 0xffffffff);
+            sceGuLightAtt(0, 0.0f, 1.0f, 0.0f);
         }
         sceGuSpecular(12.0f);
         sceGuAmbient(0x00222222);
@@ -108,7 +100,7 @@ int main(int argc, char* argv[]) {
         // setup projection (lens)
         sceGumMatrixMode(GU_PROJECTION);
         sceGumLoadIdentity();
-        sceGumPerspective(75.0f, 16.0f / 9.0f, 1.0f, 1000.0f);
+        sceGumPerspective(75.0f, 16.0f / 9.0f, 1.0f, 100.0f);
 
         // setup camera
         sceGumMatrixMode(GU_VIEW);
@@ -120,10 +112,12 @@ int main(int argc, char* argv[]) {
         }
 
         // draw obj
-        ScePspFVector3 rot = {val * 0.79f * (GU_PI/180.0f), val * 0.98f * (GU_PI/180.0f), val * 1.32f * (GU_PI/180.0f)};
-        ScePspFVector3 pos = {0, 0, 0};
-        ScePspFVector3 scale = {1.0f, 1.0f, 1.0f};
-        drawModel(0, &pos, &rot, &scale);
+        {
+            ScePspFVector3 rot = {val * 0.79f * (GU_PI/180.0f), val * 0.98f * (GU_PI/180.0f), val * 1.32f * (GU_PI/180.0f)};
+            ScePspFVector3 pos = {0, 0, 0};
+            ScePspFVector3 scale = {1.0f, 1.0f, 1.0f};
+            drawModel(0, &pos, &rot, &scale);
+        }
 
         sceGuFinish();
         sceGuSync(0, 0);
@@ -134,7 +128,7 @@ int main(int argc, char* argv[]) {
         sceDisplayWaitVblankStart();
         pspDebugScreenClear(); // clears screen pixels
         pspDebugScreenSetXY(0, 0); // reset where we draw
-        pspDebugScreenPrintf("%p %p %p", fbp0, fbp1, zbp);
+        pspDebugScreenPrintf("%p", loaded_models[0].texture_vram);
 #endif
 
         val++;
@@ -149,4 +143,3 @@ int main(int argc, char* argv[]) {
     sceKernelExitGame();
     return 0;
 }
-
