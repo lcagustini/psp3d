@@ -17,8 +17,6 @@ PSP_FW_VERSION=600
 PSPSDK=$(shell psp-config --pspsdk-path)
 include $(PSPSDK)/lib/build.mak
 
-psp: create_bin all
-
-create_bin:
-	mkdir -p bin/
-	cp src/* bin/
+bin/%.o: src/%.c
+	@mkdir -p bin/
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<

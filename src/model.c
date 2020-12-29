@@ -12,9 +12,9 @@
 void drawModel(int model, ScePspFVector3 *pos, ScePspFVector3 *rot, ScePspFVector3 *scale) {
     sceGumMatrixMode(GU_MODEL);
     sceGumLoadIdentity();
-    sceGumScale(scale);
-    sceGumRotateXYZ(rot);
     sceGumTranslate(pos);
+    sceGumRotateXYZ(rot);
+    sceGumScale(scale);
 
     sceGuTexMode(GU_PSM_8888, 0, 0, GU_FALSE);
     sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
@@ -34,19 +34,13 @@ void *loadTexture(const char *texture_filename, enum faceType face_type, int *te
         upng_decode(upng);
         if (upng_get_error(upng) == UPNG_EOK) {
             *texture_size = upng_get_width(upng);
-
             void *texture = valloc(getVRAMSize(*texture_size, *texture_size, GU_PSM_8888));
-            void *png = (void *) upng_get_buffer(upng);
-#if 1
-            memcpy(texture, png, upng_get_size(upng));
-#else
-            sceGuCopyImage(GU_PSM_8888, 0, 0, *texture_size, *texture_size, 512, png, 0, 0, 512, texture);
-#endif
+
+            memcpy(texture, upng_get_buffer(upng), upng_get_size(upng));
             sceGuTexSync();
 
             return texture;
         }
-
         upng_free(upng);
     }
 
@@ -56,6 +50,7 @@ void *loadTexture(const char *texture_filename, enum faceType face_type, int *te
 void destroyModel(int model) {
     free(loaded_models[model].vertices);
     vfree(loaded_models[model].texture_vram);
+    memset(&loaded_models[model], 0, sizeof(loaded_models[model]));
 }
 
 void loadModel(const char *obj_filename, const char *texture_filename, enum faceType face_type) {

@@ -74,11 +74,8 @@ int main(int argc, char* argv[]) {
 
     loadModel("assets/test.obj", "assets/test.png", VERTEX_ALL);
 
-    //pspDebugScreenInit();
-
     int val = 0;
     while(running()) {
-#if 1
         sceGuStart(GU_DIRECT, list);
 
         // clear screen
@@ -113,9 +110,14 @@ int main(int argc, char* argv[]) {
 
         // draw obj
         {
-            //ScePspFVector3 rot = {val * 0.79f * (GU_PI/180.0f), val * 0.98f * (GU_PI/180.0f), val * 1.32f * (GU_PI/180.0f)};
-            ScePspFVector3 rot = {0, 1.0f, 0};
-            ScePspFVector3 pos = {0, -1.0f, 0};
+            ScePspFVector3 rot = {0, val * 0.98f * (GU_PI/180.0f), 0};
+            ScePspFVector3 pos = {1.0f, -1.0f, 0};
+            ScePspFVector3 scale = {1.0f, 1.0f, 1.0f};
+            drawModel(0, &pos, &rot, &scale);
+        }
+        {
+            ScePspFVector3 rot = {0, val * 0.9f * (GU_PI/180.0f), 0};
+            ScePspFVector3 pos = {-1.0f, -1.0f, 0};
             ScePspFVector3 scale = {1.0f, 1.0f, 1.0f};
             drawModel(0, &pos, &rot, &scale);
         }
@@ -125,12 +127,6 @@ int main(int argc, char* argv[]) {
 
         sceDisplayWaitVblankStart();
         sceGuSwapBuffers();
-#else
-        sceDisplayWaitVblankStart();
-        pspDebugScreenClear(); // clears screen pixels
-        pspDebugScreenSetXY(0, 0); // reset where we draw
-        pspDebugScreenPrintf("%p", loaded_models[0].texture_vram);
-#endif
 
         val++;
     }
