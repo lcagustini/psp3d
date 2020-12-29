@@ -26,23 +26,22 @@ void drawModel(int model, ScePspFVector3 *pos, ScePspFVector3 *rot, ScePspFVecto
     sceGumDrawArray(GU_TRIANGLES,TNP_VERTEX_FORMAT|GU_TRANSFORM_3D,loaded_models[model].num_vertices,NULL,loaded_models[model].vertices);
 }
 
-void *loadTexture(const char *texture_filename, enum faceType face_type, int texture_size) {
+void *loadTexture(const char *texture_filename, enum faceType face_type, int *texture_size) {
     upng_t *upng;
 
     upng = upng_new_from_file(texture_filename);
     if (upng != NULL) {
         upng_decode(upng);
         if (upng_get_error(upng) == UPNG_EOK) {
-            void *texture = valloc(getVRAMSize(texture_size, texture_size, GU_PSM_8888));
+            *texture_size = upng_get_width(upng);
+
+            void *texture = valloc(getVRAMSize(*texture_size, *texture_size, GU_PSM_8888));
             void *png = (void *) upng_get_buffer(upng);
-
-            unsigned char *texture_byte = (unsigned char *) texture;
-            unsigned char *png_byte = (unsigned char *) png;
-            for (int i = 0; i < upng_get_size(upng); i++) {
-                texture_byte[i] = png_byte[i];
-            }
-
-            //sceGuCopyImage(GU_PSM_8888, 0, 0, texture_size, texture_size, texture_size, png, 0, 0, texture_size, texture);
+#if 1
+            memcpy(texture, png, upng_get_size(upng));
+#else
+            sceGuCopyImage(GU_PSM_8888, 0, 0, *texture_size, *texture_size, 512, png, 0, 0, 512, texture);
+#endif
             sceGuTexSync();
 
             return texture;
@@ -59,7 +58,7 @@ void destroyModel(int model) {
     vfree(loaded_models[model].texture_vram);
 }
 
-void loadModel(const char *obj_filename, const char *texture_filename, enum faceType face_type, int texture_size) {
+void loadModel(const char *obj_filename, const char *texture_filename, enum faceType face_type) {
     struct {
         struct face *faces;
         int num_faces;
@@ -93,7 +92,6 @@ void loadModel(const char *obj_filename, const char *texture_filename, enum face
             ScePspFVector2 t = {};
             fscanf(f, " %f %f", &t.x, &t.y);
             t.y = 1 - t.y;
-            t.x = 1 - t.x;
             file.texture_coords[++file.num_texture_coords] = t;
         }
         else if (!strcmp(buffer, "f")) {
@@ -129,10 +127,9 @@ void loadModel(const char *obj_filename, const char *texture_filename, enum face
     struct model *model = &loaded_models[loaded_models_n];
 
     if (face_type == VERTEX_ALL) {
-        model->texture_vram = loadTexture(texture_filename, face_type, texture_size);
+        model->texture_vram = loadTexture(texture_filename, face_type, &model->texture_size);
     }
     model->face_type = face_type;
-    model->texture_size = texture_size;
     model->vertices = malloc(3 * file.num_faces * sizeof(struct NPVertex));
     model->num_vertices = 3 * file.num_faces;
 

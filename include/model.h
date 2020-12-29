@@ -3,7 +3,7 @@
 
 #include <psptypes.h>
 
-#define MAX_OBJ_SIZE 1000
+#define MAX_OBJ_SIZE 10000
 
 struct TNPVertex { // Texture, Normal, Position
     ScePspFVector2 texture;
@@ -49,8 +49,8 @@ struct model loaded_models[10];
 int loaded_models_n;
 
 void drawModel(int model, ScePspFVector3 *pos, ScePspFVector3 *rot, ScePspFVector3 *scale);
-void *loadTexture(const char *texture_filename, enum faceType face_type, int texture_size);
+void *loadTexture(const char *texture_filename, enum faceType face_type, int *texture_size);
 void destroyModel(int model);
-void loadModel(const char *obj_filename, const char *texture_filename, enum faceType face_type, int texture_size);
+void loadModel(const char *obj_filename, const char *texture_filename, enum faceType face_type);
 
 #endif
