@@ -29,7 +29,7 @@
 #include <systems/lightning.h>
 #include <systems/filming.h>
 
-PSP_MODULE_INFO("psp3d", 0, 1, 1);
+PSP_MODULE_INFO("psp3d", 0, 0, 1);
 PSP_MAIN_THREAD_ATTR(THREAD_ATTR_USER | THREAD_ATTR_VFPU);
 
 static unsigned int __attribute__((aligned(16))) list[262144];
@@ -107,7 +107,6 @@ int main(int argc, char* argv[]) {
         addComponentRenderToEntity(id);
         getComponentRender(id)->model_id = loadModel("assets/test.obj", "assets/test.dds", VERTEX_ALL, 128);
     }
-
 
     int val = 0;
     while(running()) {

@@ -12,7 +12,7 @@ LDFLAGS =
 LIBS= -lpspgum -lpspgu -lm
 
 EXTRA_TARGETS = EBOOT.PBP
-PSP_EBOOT_TITLE = Lights Sample
+PSP_EBOOT_TITLE = psp3d
 PSP_FW_VERSION=600
 
 PSPSDK=$(shell psp-config --pspsdk-path)

@@ -3,7 +3,7 @@
 
 #include <psptypes.h>
 
-#define MAX_OBJ_SIZE 10000
+#define MAX_OBJ_SIZE 2000
 
 struct TNPVertex { // Texture, Normal, Position
     ScePspFVector2 texture;

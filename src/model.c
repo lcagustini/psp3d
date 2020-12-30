@@ -9,43 +9,43 @@
 #include <vram.h>
 
 static void PSPconvert_dxt1(unsigned char *data, unsigned int size) {
-   unsigned short *src = (unsigned short *) data;
+    unsigned short *src = (unsigned short *) data;
 
-   for (int j = 0; size >= 8; size -= 8, j++) {
-      unsigned short converted[4];
+    for (int j = 0; size >= 8; size -= 8, j++) {
+        unsigned short converted[4];
 
-      converted[0] = src[2];
-      converted[1] = src[3];
-      converted[2] = src[0];
-      converted[3] = src[1];
+        converted[0] = src[2];
+        converted[1] = src[3];
+        converted[2] = src[0];
+        converted[3] = src[1];
 
-      for (int i = 0; i < 4; i++) src[i] = converted[i];
+        for (int i = 0; i < 4; i++) src[i] = converted[i];
 
-      src += 4;
-   }
+        src += 4;
+    }
 }
 
 /*static void PSPconvert_dxt35(unsigned char *data, unsigned int size) {
-   unsigned short *src = (unsigned short *) data;
+  unsigned short *src = (unsigned short *) data;
 
-   for (int j = 0; size >= 16; size -= 16, j++) {
-      unsigned short converted[8];
+  for (int j = 0; size >= 16; size -= 16, j++) {
+  unsigned short converted[8];
 
-      converted[4] = src[1];
-      converted[5] = src[2];
-      converted[6] = src[3];
-      converted[7] = src[0];
+  converted[4] = src[1];
+  converted[5] = src[2];
+  converted[6] = src[3];
+  converted[7] = src[0];
 
-      converted[0] = src[6];
-      converted[1] = src[7];
-      converted[2] = src[4];
-      converted[3] = src[5];
+  converted[0] = src[6];
+  converted[1] = src[7];
+  converted[2] = src[4];
+  converted[3] = src[5];
 
-      for (int i = 0; i < 8; i++) src[i] = converted[i];
+  for (int i = 0; i < 8; i++) src[i] = converted[i];
 
-      src += 8;
-   }
-}*/
+  src += 8;
+  }
+  }*/
 
 static void *loadTexture(const char *texture_filename, enum faceType face_type) {
     FILE *f = fopen(texture_filename, "r");
@@ -100,6 +100,7 @@ int loadModel(const char *obj_filename, const char *texture_filename, enum faceT
     } file = {0};
 
     FILE *f = fopen(obj_filename, "r");
+
     char buffer[40] = {0};
     while ((fscanf(f, " %s", buffer)) != EOF) {
         if (!strcmp(buffer, "v")) {
