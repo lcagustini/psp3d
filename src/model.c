@@ -7,7 +7,62 @@
 #include <pspgum.h>
 #include <model.h>
 #include <vram.h>
-#include <upng.h>
+
+static void PSPconvert_dxt1(unsigned char *data, unsigned int size) {
+   unsigned short *src = (unsigned short *) data;
+
+   for (int j = 0; size >= 8; size -= 8, j++) {
+      unsigned short converted[4];
+
+      converted[0] = src[2];
+      converted[1] = src[3];
+      converted[2] = src[0];
+      converted[3] = src[1];
+
+      for (int i = 0; i < 4; i++) src[i] = converted[i];
+
+      src += 4;
+   }
+}
+
+/*static void PSPconvert_dxt35(unsigned char *data, unsigned int size) {
+   unsigned short *src = (unsigned short *) data;
+
+   for (int j = 0; size >= 16; size -= 16, j++) {
+      unsigned short converted[8];
+
+      converted[4] = src[1];
+      converted[5] = src[2];
+      converted[6] = src[3];
+      converted[7] = src[0];
+
+      converted[0] = src[6];
+      converted[1] = src[7];
+      converted[2] = src[4];
+      converted[3] = src[5];
+
+      for (int i = 0; i < 8; i++) src[i] = converted[i];
+
+      src += 8;
+   }
+}*/
+
+static void *loadTexture(const char *texture_filename, enum faceType face_type) {
+    FILE *f = fopen(texture_filename, "r");
+
+    fseek(f, 0, SEEK_END);
+    int sz = ftell(f) - 128;
+    fseek(f, 128, SEEK_SET);
+
+    void *texture = valloc(sz);
+    fread(texture, 1, sz, f);
+    PSPconvert_dxt1(texture, sz);
+    sceGuTexSync();
+
+    fclose(f);
+
+    return texture;
+}
 
 void drawModel(int model, ScePspFVector3 *pos, ScePspFVector3 *rot, ScePspFVector3 *scale) {
     sceGumMatrixMode(GU_MODEL);
@@ -16,7 +71,7 @@ void drawModel(int model, ScePspFVector3 *pos, ScePspFVector3 *rot, ScePspFVecto
     sceGumRotateXYZ(rot);
     sceGumScale(scale);
 
-    sceGuTexMode(GU_PSM_8888, 0, 0, GU_FALSE);
+    sceGuTexMode(GU_PSM_DXT1, 0, 0, GU_FALSE);
     sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
     sceGuTexLevelMode(GU_TEXTURE_AUTO, 0);
     sceGuTexFilter(GU_LINEAR, GU_LINEAR);
@@ -26,34 +81,13 @@ void drawModel(int model, ScePspFVector3 *pos, ScePspFVector3 *rot, ScePspFVecto
     sceGumDrawArray(GU_TRIANGLES, TNP_VERTEX_FORMAT | GU_TRANSFORM_3D, loaded_models[model].num_vertices, NULL, loaded_models[model].vertices);
 }
 
-static void *loadTexture(const char *texture_filename, enum faceType face_type, int *texture_size) {
-    upng_t *upng;
-
-    upng = upng_new_from_file(texture_filename);
-    if (upng != NULL) {
-        upng_decode(upng);
-        if (upng_get_error(upng) == UPNG_EOK) {
-            *texture_size = upng_get_width(upng);
-            void *texture = valloc(getVRAMSize(*texture_size, *texture_size, GU_PSM_8888));
-
-            memcpy(texture, upng_get_buffer(upng), upng_get_size(upng));
-            sceGuTexSync();
-
-            return texture;
-        }
-        upng_free(upng);
-    }
-
-    return NULL;
-}
-
 void destroyModel(int model) {
     vfree(loaded_models[model].vertices);
     vfree(loaded_models[model].texture_vram);
     memset(&loaded_models[model], 0, sizeof(loaded_models[model]));
 }
 
-int loadModel(const char *obj_filename, const char *texture_filename, enum faceType face_type) {
+int loadModel(const char *obj_filename, const char *texture_filename, enum faceType face_type, int texture_size) {
     struct {
         struct face faces[MAX_OBJ_SIZE];
         int num_faces;
@@ -117,10 +151,11 @@ int loadModel(const char *obj_filename, const char *texture_filename, enum faceT
     struct model *model = &loaded_models[loaded_models_n];
 
     if (face_type == VERTEX_ALL) {
-        model->texture_vram = loadTexture(texture_filename, face_type, &model->texture_size);
+        model->texture_vram = loadTexture(texture_filename, face_type);
     }
+    model->texture_size = texture_size;
     model->face_type = face_type;
-    model->vertices = valloc(3 * file.num_faces * sizeof(struct NPVertex));
+    model->vertices = valloc(3 * file.num_faces * sizeof(struct TNPVertex));
     model->num_vertices = 3 * file.num_faces;
 
     int k = 0;

@@ -38,8 +38,6 @@ static unsigned int __attribute__((aligned(16))) list[262144];
 #define SCR_WIDTH (480)
 #define SCR_HEIGHT (272)
 
-#define LIGHT_DISTANCE 3.0f
-
 int main(int argc, char* argv[]) {
     setupCallbacks();
 
@@ -48,15 +46,14 @@ int main(int argc, char* argv[]) {
 
     // setup GU
     void* fbp0 = valloc(getVRAMSize(BUF_WIDTH, SCR_HEIGHT, GU_PSM_8888));
-    void* fbp1 = valloc(getVRAMSize(BUF_WIDTH, SCR_HEIGHT, GU_PSM_8888));
     void* zbp = valloc(getVRAMSize(BUF_WIDTH, SCR_HEIGHT, GU_PSM_4444));
 
     sceGuInit();
 
     sceGuStart(GU_DIRECT, list);
-    sceGuDrawBuffer(GU_PSM_8888, (void *)(fbp0 - sceGeEdramGetAddr()), BUF_WIDTH);
-    sceGuDispBuffer(SCR_WIDTH, SCR_HEIGHT, (void *)(fbp1 - sceGeEdramGetAddr()), BUF_WIDTH);
-    sceGuDepthBuffer((void *)(zbp - sceGeEdramGetAddr()), BUF_WIDTH);
+    sceGuDrawBuffer(GU_PSM_8888, vrelptr(fbp0), BUF_WIDTH);
+    sceGuDispBuffer(SCR_WIDTH, SCR_HEIGHT, vrelptr(fbp0), BUF_WIDTH);
+    sceGuDepthBuffer(vrelptr(zbp), BUF_WIDTH);
     sceGuOffset(2048 - (SCR_WIDTH / 2), 2048 - (SCR_HEIGHT / 2));
     sceGuViewport(2048, 2048, SCR_WIDTH, SCR_HEIGHT);
     sceGuDepthRange(0xc350, 0x2710);
@@ -80,9 +77,12 @@ int main(int argc, char* argv[]) {
     {
         int id = createEntity();
         addComponentTransformToEntity(id);
-        getComponentTransform(id)->position.y = -1.0f;
-        addComponentRenderToEntity(id);
-        getComponentRender(id)->model_id = loadModel("assets/test.obj", "assets/test.png", VERTEX_ALL);
+        getComponentTransform(id)->position.z = -3.5f;
+        addComponentCameraToEntity(id);
+        getComponentCamera(id)->fovy = 75.0f;
+        getComponentCamera(id)->aspect_ratio = 16.0f/9.0f;
+        getComponentCamera(id)->near = 1.0f;
+        getComponentCamera(id)->far = 100.0f;
     }
     {
         int id = createEntity();
@@ -96,13 +96,18 @@ int main(int argc, char* argv[]) {
     {
         int id = createEntity();
         addComponentTransformToEntity(id);
-        getComponentTransform(id)->position.z = -3.5f;
-        addComponentCameraToEntity(id);
-        getComponentCamera(id)->fovy = 75.0f;
-        getComponentCamera(id)->aspect_ratio = 16.0f/9.0f;
-        getComponentCamera(id)->near = 1.0f;
-        getComponentCamera(id)->far = 100.0f;
+        getComponentTransform(id)->position.y = -2.0f;
+        addComponentRenderToEntity(id);
+        getComponentRender(id)->model_id = loadModel("assets/map.obj", "assets/map.dds", VERTEX_ALL, 256);
     }
+    {
+        int id = createEntity();
+        addComponentTransformToEntity(id);
+        getComponentTransform(id)->position.y = -1.0f;
+        addComponentRenderToEntity(id);
+        getComponentRender(id)->model_id = loadModel("assets/test.obj", "assets/test.dds", VERTEX_ALL, 128);
+    }
+
 
     int val = 0;
     while(running()) {
@@ -127,7 +132,6 @@ int main(int argc, char* argv[]) {
     }
 
     vfree(fbp0);
-    vfree(fbp1);
     vfree(zbp);
 
     sceGuTerm();

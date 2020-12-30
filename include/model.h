@@ -50,6 +50,6 @@ int loaded_models_n;
 
 void drawModel(int model, ScePspFVector3 *pos, ScePspFVector3 *rot, ScePspFVector3 *scale);
 void destroyModel(int model);
-int loadModel(const char *obj_filename, const char *texture_filename, enum faceType face_type);
+int loadModel(const char *obj_filename, const char *texture_filename, enum faceType face_type, int texture_size);
 
 #endif
