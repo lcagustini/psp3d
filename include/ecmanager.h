@@ -5,6 +5,7 @@
 #include <components/render.h>
 #include <components/motion.h>
 #include <components/light.h>
+#include <components/camera.h>
 
 #define MAX_ENTITIES 20
 #define MAX_COMPONENTS 10
@@ -36,6 +37,13 @@ struct {
         struct lightComponent component;
     } components_light[MAX_COMPONENTS];
     int components_light_size;
+
+    struct {
+        int entity_id;
+        struct cameraComponent component;
+    } components_camera[MAX_COMPONENTS];
+    int components_camera_size;
+
 } ecmanager_data;
 
 int createEntity();

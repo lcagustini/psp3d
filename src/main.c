@@ -27,6 +27,7 @@
 #include <ecmanager.h>
 #include <systems/drawing.h>
 #include <systems/lightning.h>
+#include <systems/filming.h>
 
 PSP_MODULE_INFO("psp3d", 0, 1, 1);
 PSP_MAIN_THREAD_ATTR(THREAD_ATTR_USER | THREAD_ATTR_VFPU);
@@ -92,6 +93,16 @@ int main(int argc, char* argv[]) {
         getComponentLight(id)->light_id = 0;
         getComponentLight(id)->color = 0xFFFFFFFF;
     }
+    {
+        int id = createEntity();
+        addComponentTransformToEntity(id);
+        getComponentTransform(id)->position.z = -3.5f;
+        addComponentCameraToEntity(id);
+        getComponentCamera(id)->fovy = 75.0f;
+        getComponentCamera(id)->aspect_ratio = 16.0f/9.0f;
+        getComponentCamera(id)->near = 1.0f;
+        getComponentCamera(id)->far = 100.0f;
+    }
 
     int val = 0;
     while(running()) {
@@ -102,20 +113,7 @@ int main(int argc, char* argv[]) {
         sceGuClearDepth(0);
         sceGuClear(GU_COLOR_BUFFER_BIT | GU_DEPTH_BUFFER_BIT);
 
-        // setup projection (lens)
-        sceGumMatrixMode(GU_PROJECTION);
-        sceGumLoadIdentity();
-        sceGumPerspective(75.0f, 16.0f / 9.0f, 1.0f, 100.0f);
-
-        // setup camera
-        sceGumMatrixMode(GU_VIEW);
-        {
-            ScePspFVector3 pos = {0, 0, -3.5f};
-
-            sceGumLoadIdentity();
-            sceGumTranslate(&pos);
-        }
-
+        updateSystemFilming();
         updateSystemLightning();
         updateSystemDrawing();
 
