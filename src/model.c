@@ -53,7 +53,7 @@ void destroyModel(int model) {
     memset(&loaded_models[model], 0, sizeof(loaded_models[model]));
 }
 
-void loadModel(const char *obj_filename, const char *texture_filename, enum faceType face_type) {
+int loadModel(const char *obj_filename, const char *texture_filename, enum faceType face_type) {
     struct {
         struct face faces[MAX_OBJ_SIZE];
         int num_faces;
@@ -139,5 +139,7 @@ void loadModel(const char *obj_filename, const char *texture_filename, enum face
 
         k += 3;
     }
+
     loaded_models_n++;
+    return loaded_models_n - 1;
 }

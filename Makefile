@@ -1,5 +1,5 @@
 TARGET = main
-OBJS = bin/main.o bin/callbacks.o bin/vram.o bin/model.o bin/upng.o
+OBJS = bin/main.o bin/callbacks.o bin/vram.o bin/model.o bin/upng.o bin/ecmanager.o bin/components/motion.o bin/components/render.o bin/components/transform.o bin/systems/drawing.o
 
 INCDIR = ./include
 CFLAGS = -G0 -Wall -Ofast
@@ -19,4 +19,6 @@ include $(PSPSDK)/lib/build.mak
 
 bin/%.o: src/%.c
 	@mkdir -p bin/
+	@mkdir -p bin/components
+	@mkdir -p bin/systems
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<

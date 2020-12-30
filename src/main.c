@@ -24,6 +24,9 @@
 #include <vector.h>
 #include <model.h>
 
+#include <ecmanager.h>
+#include <systems/drawing.h>
+
 PSP_MODULE_INFO("psp3d", 0, 1, 1);
 PSP_MAIN_THREAD_ATTR(THREAD_ATTR_USER | THREAD_ATTR_VFPU);
 
@@ -72,7 +75,12 @@ int main(int argc, char* argv[]) {
     sceDisplayWaitVblankStart();
     sceGuDisplay(GU_TRUE);
 
-    loadModel("assets/test.obj", "assets/test.png", VERTEX_ALL);
+    {
+        int id = createEntity();
+        addComponentTransformToEntity(id);
+        addComponentRenderToEntity(id);
+        getComponentRender(id)->model_id = loadModel("assets/test.obj", "assets/test.png", VERTEX_ALL);
+    }
 
     int val = 0;
     while(running()) {
@@ -108,13 +116,7 @@ int main(int argc, char* argv[]) {
             sceGumTranslate(&pos);
         }
 
-        // draw obj
-        {
-            ScePspFVector3 rot = {0, val * 0.98f * (GU_PI/180.0f), 0};
-            ScePspFVector3 pos = {0.0f, -1.0f, 0};
-            ScePspFVector3 scale = {1.0f, 1.0f, 1.0f};
-            drawModel(0, &pos, &rot, &scale);
-        }
+        updateSystemDrawing();
 
         sceGuFinish();
         sceGuSync(0, 0);
