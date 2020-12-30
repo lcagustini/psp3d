@@ -26,6 +26,7 @@
 
 #include <ecmanager.h>
 #include <systems/drawing.h>
+#include <systems/lightning.h>
 
 PSP_MODULE_INFO("psp3d", 0, 1, 1);
 PSP_MAIN_THREAD_ATTR(THREAD_ATTR_USER | THREAD_ATTR_VFPU);
@@ -78,8 +79,18 @@ int main(int argc, char* argv[]) {
     {
         int id = createEntity();
         addComponentTransformToEntity(id);
+        getComponentTransform(id)->position.y = -1.0f;
         addComponentRenderToEntity(id);
         getComponentRender(id)->model_id = loadModel("assets/test.obj", "assets/test.png", VERTEX_ALL);
+    }
+    {
+        int id = createEntity();
+        addComponentTransformToEntity(id);
+        getComponentTransform(id)->position.y = 1.0f;
+        getComponentTransform(id)->position.x = 1.0f;
+        addComponentLightToEntity(id);
+        getComponentLight(id)->light_id = 0;
+        getComponentLight(id)->color = 0xFFFFFFFF;
     }
 
     int val = 0;
@@ -90,17 +101,6 @@ int main(int argc, char* argv[]) {
         sceGuClearColor(0x554433);
         sceGuClearDepth(0);
         sceGuClear(GU_COLOR_BUFFER_BIT | GU_DEPTH_BUFFER_BIT);
-
-        // setup lights
-        {
-            ScePspFVector3 pos = { cosf(val * (GU_PI/180)) * LIGHT_DISTANCE, 0, sinf(val * (GU_PI/180)) * LIGHT_DISTANCE };
-            sceGuLight(0, GU_POINTLIGHT, GU_DIFFUSE_AND_SPECULAR, &pos);
-            sceGuLightColor(0, GU_DIFFUSE, 0xffffffff);
-            sceGuLightColor(0, GU_SPECULAR, 0xffffffff);
-            sceGuLightAtt(0, 0.0f, 1.0f, 0.0f);
-        }
-        sceGuSpecular(12.0f);
-        sceGuAmbient(0x00222222);
 
         // setup projection (lens)
         sceGumMatrixMode(GU_PROJECTION);
@@ -116,6 +116,7 @@ int main(int argc, char* argv[]) {
             sceGumTranslate(&pos);
         }
 
+        updateSystemLightning();
         updateSystemDrawing();
 
         sceGuFinish();

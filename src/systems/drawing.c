@@ -1,6 +1,5 @@
 #include <systems/drawing.h>
 #include <ecmanager.h>
-#include <stdio.h>
 
 void updateSystemDrawing() {
     for (int i = 0; i < ecmanager_data.entity_ids_size; i++) {
