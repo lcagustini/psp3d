@@ -1,5 +1,6 @@
 TARGET = main
-OBJS = bin/main.o bin/callbacks.o bin/vram.o bin/model.o bin/upng.o bin/ecmanager.o bin/components/motion.o bin/components/light.o bin/components/render.o bin/components/transform.o bin/systems/drawing.o bin/systems/lightning.o
+SRCS = $(shell find src/ -type f -name '*.c')
+OBJS = $(patsubst src/%.c, bin/%.o, $(SRCS))
 
 INCDIR = ./include
 CFLAGS = -G0 -Wall -Ofast
