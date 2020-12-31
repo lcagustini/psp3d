@@ -18,16 +18,19 @@
 
 #include <pspgu.h>
 #include <pspgum.h>
+#include <pspctrl.h>
 
 #include <callbacks.h>
 #include <vram.h>
-#include <vector.h>
+//#include <vector.h>
 #include <model.h>
 
 #include <ecmanager.h>
 #include <systems/drawing.h>
 #include <systems/lightning.h>
 #include <systems/filming.h>
+#include <systems/controlling.h>
+#include <systems/moving.h>
 
 PSP_MODULE_INFO("psp3d", 0, 0, 1);
 PSP_MAIN_THREAD_ATTR(THREAD_ATTR_USER | THREAD_ATTR_VFPU);
@@ -74,6 +77,9 @@ int main(int argc, char* argv[]) {
     sceDisplayWaitVblankStart();
     sceGuDisplay(GU_TRUE);
 
+    sceCtrlSetSamplingCycle(0);
+    sceCtrlSetSamplingMode(PSP_CTRL_MODE_ANALOG);
+
     {
         int id = createEntity();
         addComponentTransformToEntity(id);
@@ -103,9 +109,11 @@ int main(int argc, char* argv[]) {
     {
         int id = createEntity();
         addComponentTransformToEntity(id);
-        getComponentTransform(id)->position.y = -1.0f;
+        getComponentTransform(id)->position.y = -1.4f;
         addComponentRenderToEntity(id);
         getComponentRender(id)->model_id = loadModel("assets/test.obj", "assets/test.dds", VERTEX_ALL, 128);
+        addComponentMotionToEntity(id);
+        addComponentControllerToEntity(id);
     }
 
     int val = 0;
@@ -117,8 +125,10 @@ int main(int argc, char* argv[]) {
         sceGuClearDepth(0);
         sceGuClear(GU_COLOR_BUFFER_BIT | GU_DEPTH_BUFFER_BIT);
 
-        updateSystemFilming();
+        updateSystemControlling();
+        updateSystemMoving();
         updateSystemLightning();
+        updateSystemFilming();
         updateSystemDrawing();
 
         sceGuFinish();

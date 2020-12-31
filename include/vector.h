@@ -3,16 +3,16 @@
 
 #include <math.h>
 
-inline static float vectorLenSquared(ScePspFVector3 v) {
+inline float vectorLenSquared(ScePspFVector3 v) {
     float len = v.x * v.x + v.y * v.y + v.z * v.z;
     return len;
 }
 
-inline static float vectorLen(ScePspFVector3 v) {
+inline float vectorLen(ScePspFVector3 v) {
     return sqrt(vectorLenSquared(v));
 }
 
-inline static void vectorNormalize2D(ScePspFVector3 *v) {
+inline void vectorNormalize2D(ScePspFVector3 *v) {
     float len = v->x * v->x + v->y * v->y;
     if (!len) return;
     float div = sqrt(len);
@@ -20,16 +20,16 @@ inline static void vectorNormalize2D(ScePspFVector3 *v) {
     v->y *= div;
 }
 
-inline static void vectorNormalize(ScePspFVector3 *v) {
+inline void vectorNormalize(ScePspFVector3 *v) {
     float len = v->x * v->x + v->y * v->y + v->z * v->z;
     if (!len) return;
-    float div = sqrt(len);
+    float div = 1.0f/sqrt(len);
     v->x *= div;
     v->y *= div;
     v->z *= div;
 }
 
-inline static float vectorDot(ScePspFVector3 a, ScePspFVector3 b) {
+inline float vectorDot(ScePspFVector3 a, ScePspFVector3 b) {
     return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
@@ -99,6 +99,29 @@ ScePspFQuaternion quatMult(ScePspFQuaternion a, ScePspFQuaternion b) {
     ret.z = a.w*b.z - a.x*b.y + a.y*b.x + a.z*b.w;
 
     return ret;
+}
+
+ScePspFVector3 quatToEuler(ScePspFQuaternion q) {
+    ScePspFVector3 angles;
+
+    // roll (x-axis rotation)
+    double sinr_cosp = 2 * (q.w * q.x + q.y * q.z);
+    double cosr_cosp = 1 - 2 * (q.x * q.x + q.y * q.y);
+    angles.x = atan2(sinr_cosp, cosr_cosp);
+
+    // pitch (y-axis rotation)
+    double sinp = 2 * (q.w * q.y - q.z * q.x);
+    if (fabs(sinp) >= 1)
+        angles.y = copysign(M_PI / 2, sinp); // use 90 degrees if out of range
+    else
+        angles.y = asin(sinp);
+
+    // yaw (z-axis rotation)
+    double siny_cosp = 2 * (q.w * q.z + q.x * q.y);
+    double cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z);
+    angles.z = atan2(siny_cosp, cosy_cosp);
+
+    return angles;
 }
 
 #endif
