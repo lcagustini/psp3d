@@ -7,6 +7,8 @@ struct cameraComponent {
     float fovy;
     float aspect_ratio;
     float near, far;
+
+    int follow_entity;
 };
 
 struct cameraComponent *getComponentCamera(int entity_id);

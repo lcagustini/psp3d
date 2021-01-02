@@ -11,6 +11,8 @@
 #define MAX_ENTITIES 20
 #define MAX_COMPONENTS 10
 
+#define DT (1.0f/60.0f)
+
 struct {
     int entity_ids[MAX_ENTITIES];
     int entity_ids_size;

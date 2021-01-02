@@ -7,6 +7,8 @@
 struct motionComponent {
     ScePspFVector3 velocity;
     ScePspFVector3 acceleration;
+
+    float drag;
     float gravity;
 };
 

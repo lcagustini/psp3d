@@ -16,7 +16,7 @@ void updateSystemMoving() {
         transform_component->position = vectorAdd(transform_component->position, motion_component->velocity);
 
         motion_component->velocity = vectorAdd(motion_component->velocity, motion_component->acceleration);
-        motion_component->velocity = vectorScale(0.95f, motion_component->velocity);
+        motion_component->velocity = vectorScale(motion_component->drag, motion_component->velocity);
 
         ScePspFVector3 forward = {0, 0, 1};
         ScePspFVector3 dir = motion_component->velocity;

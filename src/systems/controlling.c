@@ -14,8 +14,8 @@ void updateSystemControlling() {
         SceCtrlData pad;
         sceCtrlReadBufferPositive(&pad, 1);
 
-        motion_component->acceleration.x = 0.005f * ((controller_component->invert_x ? (128 - pad.Lx) : (pad.Lx - 128)) / 255.0f);
-        motion_component->acceleration.z = 0.005f * ((controller_component->invert_y ? (128 - pad.Ly) : (pad.Ly - 128)) / 255.0f);
+        motion_component->acceleration.x = DT * ((controller_component->invert_x ? (128 - pad.Lx) : (pad.Lx - 128)) / 255.0f);
+        motion_component->acceleration.z = DT * ((controller_component->invert_y ? (128 - pad.Ly) : (pad.Ly - 128)) / 255.0f);
 
         if (pad.Buttons != 0){
             if (pad.Buttons & PSP_CTRL_SQUARE){

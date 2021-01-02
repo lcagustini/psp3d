@@ -22,7 +22,6 @@
 
 #include <callbacks.h>
 #include <vram.h>
-//#include <vector.h>
 #include <model.h>
 
 #include <ecmanager.h>
@@ -89,6 +88,7 @@ int main(int argc, char* argv[]) {
         getComponentCamera(id)->aspect_ratio = 16.0f/9.0f;
         getComponentCamera(id)->near = 1.0f;
         getComponentCamera(id)->far = 100.0f;
+        getComponentCamera(id)->follow_entity = 3;
     }
     {
         int id = createEntity();
@@ -113,6 +113,7 @@ int main(int argc, char* argv[]) {
         addComponentRenderToEntity(id);
         getComponentRender(id)->model_id = loadModel("assets/test.obj", "assets/test.dds", VERTEX_ALL, 128);
         addComponentMotionToEntity(id);
+        getComponentMotion(id)->drag = 0.95f;
         addComponentControllerToEntity(id);
     }
 
